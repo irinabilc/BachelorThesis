@@ -15,7 +15,7 @@ import irinabilc.bachelorthesis.utils.validate
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.logging.Logger
+
 
 class RegisterAccountActivity : AppCompatActivity() {
     var _usernameText: EditText? = null
@@ -38,19 +38,22 @@ class RegisterAccountActivity : AppCompatActivity() {
 
         binding.loginLink.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
     }
 
     private fun register() {
         if (!validateFields()) {
-            _registerButton!!.isEnabled = false
             Toast.makeText(this@RegisterAccountActivity, "Invalid data!", Toast.LENGTH_SHORT).show()
+            _registerButton!!.isEnabled = true
             return
         }
 
+        _registerButton!!.isEnabled = false
+
         val service = ServiceGenerator.createService(ApiNetworkInterface::class.java)
 
-        service.addUser(User( _usernameText?.text.toString(), _passwordText?.text.toString()))
+        service.addUser(User(_usernameText?.text.toString(), _passwordText?.text.toString()))
             .enqueue(object : Callback<User> {
                 override fun onFailure(call: Call<User>, t: Throwable) {
                     Toast.makeText(this@RegisterAccountActivity, "Register error!", Toast.LENGTH_SHORT).show()
@@ -79,8 +82,8 @@ class RegisterAccountActivity : AppCompatActivity() {
             "Passwords don't coincide!"
         )
 
-        if (_usernameText?.error != "" || _passwordText?.error != "" ||
-            _confirmPassword?.error != ""
+        if (_usernameText?.error != null || _passwordText?.error != null ||
+            _confirmPassword?.error != null
         )
             return false
         return true
