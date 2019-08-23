@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "207876325817",
+    "firebase_url": "https://bachelorthesis-250314.firebaseio.com",
+    "project_id": "bachelorthesis-250314",
+    "storage_bucket": "bachelorthesis-250314.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:207876325817:android:97d5abc880312bf1",
+        "android_client_info": {
+          "package_name": "irinabilc.bachelorthesis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "207876325817-toc9ckh99f5ent0qho4j6vucl14moole.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "irinabilc.bachelorthesis",
+            "certificate_hash": "9ce70349883b9a8b1963a2614bb01cfcfeb31e88"
+          }
+        },
+        {
+          "client_id": "207876325817-s2cidedb5thc22msvi140ni7j8o27qba.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApTOQMHWghAocs5FeA0hOlVTZt0PpXo0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "207876325817-s2cidedb5thc22msvi140ni7j8o27qba.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

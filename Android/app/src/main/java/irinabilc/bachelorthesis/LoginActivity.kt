@@ -5,12 +5,12 @@ import android.content.Intent
 import android.net.wifi.WifiManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.Toast
+import android.util.Log
+import android.widget.*
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
+import com.google.firebase.auth.FirebaseAuth
 import irinabilc.bachelorthesis.camera_feature.CameraActivity
 import irinabilc.bachelorthesis.domain.User
 import irinabilc.bachelorthesis.networking.ApiNetworkInterface
@@ -22,28 +22,37 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
+    private val TAG = "LoginUserActivity"
 
+    // shared prefs
     private val PREFS_NAME = "user_pref"
-    private val PREFS_USERNAME = "username"
-    private val PREFS_PASSWORD = "password"
-    private var _usernameText: EditText? = null
+    private val USER_STATUS_PREFS = "states"
+    // UI elements
+    private var _emailText: EditText? = null
     private var _passwordText: EditText? = null
     private var _loginButton: Button? = null
     private var _rememberMe: CheckBox? = null
+    private var _progressBar: ProgressBar? = null
+
+    //Firebase
+    private var mAuth: FirebaseAuth? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = DataBindingUtil.setContentView<LoginActivityBinding>(this, R.layout.activity_login)
-        checkLogin()
-        _usernameText = binding.usernameEditText
+        //checkLogin()
+        _emailText = binding.emailEditText
         _passwordText = binding.passwordEditText
         _loginButton = binding.loginButton
         _rememberMe = binding.rememberMe
+        _progressBar = ProgressBar(this)
+        _progressBar!!.isVisible = false
 
-
+        mAuth = FirebaseAuth.getInstance()
 
         _loginButton?.setOnClickListener {
-            login()
+            //login()
+            loginUser()
         }
 
         binding.registerLink.setOnClickListener {
@@ -61,21 +70,44 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    override fun onBackPressed() {
-    }
+    private fun loginUser() {
+        if (validateFields()) {
+            _progressBar!!.isVisible = true
 
+            mAuth!!.signInWithEmailAndPassword(_emailText!!.text.toString(), _passwordText!!.text.toString())
+                .addOnCompleteListener { task ->
+                    _progressBar!!.isVisible = false
 
-    fun checkLogin() {
-        val pref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val username = pref.getString(PREFS_USERNAME, null)
-        val password = pref.getString(PREFS_PASSWORD, null)
-
-        if (username != null || password != null) {
-            startActivity(Intent(this, CameraActivity::class.java))
-            finish()
+                    if (task.isSuccessful){
+                        Log.d(TAG, "signInWithEMailAndPassword:success")
+                        updateUI()
+                    }
+                    else{
+                        Log.e(TAG,"signInWithEMailAndPassword:failure", task.exception)
+                        Toast.makeText(this, "Authentication failed!", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
-
     }
+
+    private fun updateUI() {
+        val intent = Intent(this, CameraActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+    }
+
+
+
+//    fun checkLogin() {
+//        val pref = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+//        val status = pref.getString(USER_STATUS_PREFS, null)
+//
+//        if (status != null) {
+//            startActivity(Intent(this, CameraActivity::class.java))
+//            finish()
+//        }
+//
+//    }
 
     private fun login() {
         if (!validateFields()) {
@@ -86,7 +118,7 @@ class LoginActivity : AppCompatActivity() {
         _loginButton!!.isEnabled = false
 
         val service = ServiceGenerator.createService(ApiNetworkInterface::class.java)
-        service.confirmUser(User(_usernameText?.text.toString(), _passwordText?.text.toString()))
+        service.confirmUser(User(_emailText?.text.toString(), _passwordText?.text.toString()))
             .enqueue(object : Callback<Boolean> {
                 override fun onFailure(call: Call<Boolean>, t: Throwable) {
                     Toast.makeText(this@LoginActivity, "Error!", Toast.LENGTH_SHORT).show()
@@ -97,7 +129,7 @@ class LoginActivity : AppCompatActivity() {
                     if (response.body()!!) {
                         Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
                         if (_rememberMe?.isChecked!!) {
-                            rememberMe()
+                            //rememberMe()
                         }
                         startActivity(Intent(this@LoginActivity, CameraActivity::class.java))
                         finish()
@@ -109,17 +141,17 @@ class LoginActivity : AppCompatActivity() {
             })
     }
 
-    private fun rememberMe() {
-        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-            .putString(PREFS_USERNAME, _usernameText?.text.toString())
-            .putString(PREFS_PASSWORD, _passwordText?.text.toString()).apply()
-    }
+//    private fun rememberMe() {
+//        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+//            .putString(PREFS_USERNAME, _emailText?.text.toString())
+//            .putString(PREFS_PASSWORD, _passwordText?.text.toString()).apply()
+//    }
 
 
     private fun validateFields(): Boolean {
-        _usernameText?.validate({ s -> s.isValid() }, "Invalid username!")
+        _emailText?.validate({ s -> s.isValid() }, "Invalid username!")
         _passwordText?.validate({ s -> s.isValid() }, "Invalid password!")
-        if (_usernameText?.error != null || _passwordText?.error != null)
+        if (_emailText?.error != null || _passwordText?.error != null)
             return false
         return true
     }
