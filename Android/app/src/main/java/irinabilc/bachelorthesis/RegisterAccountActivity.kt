@@ -58,7 +58,7 @@ class RegisterAccountActivity : AppCompatActivity() {
 
 
         mDatabase = FirebaseDatabase.getInstance()
-        mDatabaseReference = mDatabase!!.reference!!.child("Users")
+        mDatabaseReference = mDatabase!!.reference.child("Users")
         mAuth = FirebaseAuth.getInstance()
 
         binding.registerButton.setOnClickListener {
@@ -123,7 +123,7 @@ class RegisterAccountActivity : AppCompatActivity() {
         val mUser = mAuth!!.currentUser
         mUser!!.sendEmailVerification().addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
-                Toast.makeText(this, "Confirmation email sent to" + mUser!!.email, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Confirmation email sent to" + mUser.email, Toast.LENGTH_SHORT).show()
             }
             else{
                 Log.e(TAG,"sendEmailVerification:failure", task.exception)

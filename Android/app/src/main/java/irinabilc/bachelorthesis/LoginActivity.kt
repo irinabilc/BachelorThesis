@@ -1,13 +1,11 @@
 package irinabilc.bachelorthesis
 
-import android.content.Context
 import android.content.Intent
-import android.net.wifi.WifiManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.*
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import com.google.firebase.auth.FirebaseAuth
@@ -31,7 +29,6 @@ class LoginActivity : AppCompatActivity() {
     private var _emailText: EditText? = null
     private var _passwordText: EditText? = null
     private var _loginButton: Button? = null
-    private var _rememberMe: CheckBox? = null
     private var _progressBar: ProgressBar? = null
 
     //Firebase
@@ -44,8 +41,7 @@ class LoginActivity : AppCompatActivity() {
         _emailText = binding.emailEditText
         _passwordText = binding.passwordEditText
         _loginButton = binding.loginButton
-        _rememberMe = binding.rememberMe
-        _progressBar = ProgressBar(this)
+        _progressBar = binding.progressBat
         _progressBar!!.isVisible = false
 
         mAuth = FirebaseAuth.getInstance()
@@ -72,17 +68,18 @@ class LoginActivity : AppCompatActivity() {
 
     private fun loginUser() {
         if (validateFields()) {
-            _progressBar!!.isVisible = true
+            _progressBar!!.visibility = View.VISIBLE
 
             mAuth!!.signInWithEmailAndPassword(_emailText!!.text.toString(), _passwordText!!.text.toString())
                 .addOnCompleteListener { task ->
-                    _progressBar!!.isVisible = false
+                    _progressBar!!.visibility = View.GONE
 
                     if (task.isSuccessful){
                         Log.d(TAG, "signInWithEMailAndPassword:success")
                         updateUI()
                     }
                     else{
+                        _progressBar!!.visibility = View.GONE
                         Log.e(TAG,"signInWithEMailAndPassword:failure", task.exception)
                         Toast.makeText(this, "Authentication failed!", Toast.LENGTH_SHORT).show()
                     }
@@ -91,6 +88,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
+        _progressBar!!.visibility = View.GONE
         val intent = Intent(this, CameraActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
@@ -128,9 +126,6 @@ class LoginActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
                     if (response.body()!!) {
                         Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
-                        if (_rememberMe?.isChecked!!) {
-                            //rememberMe()
-                        }
                         startActivity(Intent(this@LoginActivity, CameraActivity::class.java))
                         finish()
                     } else {

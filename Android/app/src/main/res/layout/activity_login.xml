@@ -5,69 +5,90 @@
     <data class=".LoginActivityBinding"/>
 
 
-    <LinearLayout android:orientation="vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:paddingTop="56dp"
-                  android:paddingLeft="24dp"
-                  android:paddingRight="24dp">
-        <TextView android:layout_width="fill_parent" android:layout_height="wrap_content"
-                  android:text="Licenta"
-                  android:textSize="32dp"
-                  android:gravity="center"
-        />
-        <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp">
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:orientation="vertical">
 
-            <EditText android:id="@+id/email_edit_text"
+        <LinearLayout android:orientation="vertical"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
-                      android:text="@string/email"
-                      android:inputType="textEmailAddress"/>
+                      android:paddingTop="56dp"
+                      android:paddingLeft="24dp"
+                      android:paddingRight="24dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <TextView android:layout_width="fill_parent" android:layout_height="wrap_content"
+                      android:text="binOWLculars"
+                      android:textSize="32dp"
+                      android:gravity="center"
+            />
+            <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp">
 
-        <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp">
+                <EditText android:id="@+id/email_edit_text"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:hint="@string/email"
+                          android:inputType="textEmailAddress"/>
 
-            <EditText android:id="@+id/password_edit_text"
-                      android:layout_width="match_parent"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp">
+
+                <EditText android:id="@+id/password_edit_text"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:hint="@string/password"
+                          android:inputType="textPassword"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.core.widget.ContentLoadingProgressBar
+                    android:id="@+id/progress_bat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:foregroundGravity="center"
+                    android:indeterminate="true"
+            />
+
+            <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/login_button"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="12dp"
+                    android:padding="12dp"
+                    android:text="@string/login"/>
+
+
+            <TextView android:id="@+id/register_link"
+                      android:layout_width="fill_parent"
                       android:layout_height="wrap_content"
-                      android:hint="@string/password"
-                      android:inputType="textPassword"/>
+                      android:layout_marginBottom="24dp"
+                      android:text="Not registered yet? Sign up now!"
+                      android:gravity="center"
+                      android:textSize="16dip"
+            />
+        </LinearLayout>
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/login_button"
-                android:layout_width="fill_parent"
+        <ProgressBar
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"
-                android:padding="12dp"
-                android:text="@string/login"/>
-
-        <CheckBox android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:id="@+id/remember_me"
-                  android:text="Remember me"
-                  android:layout_marginBottom="12dp"
-
+                android:id="@+id/progressBar"
+                android:progressDrawable="@drawable/circular_progress_bar"
+                android:layout_gravity="center"
+                android:visibility="gone"
         />
 
-        <TextView android:id="@+id/register_link"
-                  android:layout_width="fill_parent"
-                  android:layout_height="wrap_content"
-                  android:layout_marginBottom="24dp"
-                  android:text="Not registered yet? Sign up now!"
-                  android:gravity="center"
-                  android:textSize="16dip"
-        />
     </LinearLayout>
+
+
 </layout>

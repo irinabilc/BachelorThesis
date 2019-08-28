@@ -1,6 +1,7 @@
 package irinabilc.bachelorthesis.camera_feature
 
 import android.Manifest
+import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -9,118 +10,102 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
+import android.os.*
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.Environment
-import android.os.PersistableBundle
 import android.provider.MediaStore
-import android.util.Base64
-import android.util.Log
 import android.view.TextureView
-import android.view.View
 import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import irinabilc.bachelorthesis.CameraActivityBinding
 import irinabilc.bachelorthesis.R
-import irinabilc.bachelorthesis.domain.Image
-import irinabilc.bachelorthesis.networking.ApiNetworkInterface
-import irinabilc.bachelorthesis.networking.ServiceGenerator
-import kotlinx.android.synthetic.main.activity_camera.*
-import org.w3c.dom.Text
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.min
 
 class CameraActivity : AppCompatActivity() {
     private lateinit var _cameraViewFinder: TextureView
     private lateinit var _button: FloatingActionButton
 
-    private val REQUEST_CODE_PERMISSIONS = 10
+    private val TAG = "CameraActivity"
+
+    val REQUEST_IMAGE_CAPTURE = 1
+
+
+    private val PERMISSION_REQUEST_CODE: Int = 101
 
     // This is an array of all the permission specified in the manifest
-    private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    private val REQUIRED_PERMISSIONS = arrayOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
 
 
-//    private var photoFile: File? = null
-//    private lateinit var currentPhotoPath: String
-//    private val DIRECTORY_NAME = "Licenta"
+    private var photoFile: File? = null
+    private lateinit var currentPhotoPath: String
+    private val DIRECTORY_NAME = "blep"
+    private var currentBitmap: Bitmap? = null
+
+    private lateinit var binding: CameraActivityBinding
+
 
     @Override
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = DataBindingUtil.setContentView<CameraActivityBinding>(this, R.layout.activity_camera)
+        binding = DataBindingUtil.setContentView<CameraActivityBinding>(this, R.layout.activity_camera)
+        //setActionBar(binding.myToolbar)
+        if (checkPersmission()) takePicture() else requestPermission()
 
-        _cameraViewFinder = binding.viewFinder
-        //_TextView = binding.imageText
-        _button = binding.captureButton
 
-        if (allPermissionsGranted()) {
-            _cameraViewFinder.post { startCamera() }
-        } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+    }
+
+    private fun checkPersmission(): Boolean {
+        return (ContextCompat.checkSelfPermission(this, CAMERA) ==
+                PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            this, READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            this,
+            WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(READ_EXTERNAL_STORAGE, CAMERA, WRITE_EXTERNAL_STORAGE),
+            PERMISSION_REQUEST_CODE
+        )
+    }
+
+
+    private fun ImageView.setPic() {
+        // Get the dimensions of the View
+        val targetW: Int = this.measuredWidth
+        val targetH: Int = this.measuredHeight
+
+        val bmOptions = BitmapFactory.Options().apply {
+            // Get the dimensions of the bitmap
+            inJustDecodeBounds = true
+
+            val photoW: Int = outWidth
+            val photoH: Int = outHeight
+
+            // Determine how much to scale down the image
+            val scaleFactor: Int = min(photoW / targetW, photoH / targetH)
+
+            // Decode the image file into a Bitmap sized to fill the View
+            inJustDecodeBounds = false
+            inSampleSize = scaleFactor
         }
-
-        // Every time the provided texture view changes, recompute layout
-        _cameraViewFinder.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-            updateTransform()
-        }
-
-
-        //_TextView.isVisible = false
-
-
-//        val service = ServiceGenerator.createService(ApiNetworkInterface::class.java)
-//        _button.setOnClickListener {
-//            service.addImage(Image("borhot")).enqueue(object : Callback<Boolean>{
-//                override fun onFailure(call: Call<Boolean>, t: Throwable) {
-//                    Log.d("OnFailureError", t.message.toString())
-//                }
-//
-//                override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
-//                    Log.d("OnSuccess", "Yay!")
-//                }
-//            })
-//        }
-
-    }
-
-    private fun startCamera() {
-        // TODO: Implement CameraX operations
-    }
-
-    private fun updateTransform() {
-        // TODO: Implement camera viewfinder transformations
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
-    ) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                _cameraViewFinder.post { startCamera() }
-            } else {
-                displayMessage(
-                    this,
-                    "Permissions not granted by the user."
-                )
-                finish()
-            }
+        BitmapFactory.decodeFile(currentPhotoPath, bmOptions)?.also { bitmap ->
+            this.setImageBitmap(bitmap)
+            currentBitmap = bitmap
         }
     }
 
@@ -133,12 +118,12 @@ class CameraActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-//
+
 //    private fun captureImage() {
 //        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 //            ActivityCompat.requestPermissions(
 //                this,
-//                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+//                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),
 //                0
 //            )
 //        } else {
@@ -158,7 +143,7 @@ class CameraActivity : AppCompatActivity() {
 //                            )
 //
 //                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-//                        startActivityForResult(cameraIntent, CAPTURE_IMAGE_REQUEST)
+//                        startActivityForResult(cameraIntent, REQUEST_CODE_PERMISSIONS)
 //                    }
 //                } catch (ex: Exception) {
 //                    displayMessage(baseContext, "Capture image exception: " + ex.printStackTrace())
@@ -169,53 +154,100 @@ class CameraActivity : AppCompatActivity() {
 //
 //        }
 //    }
-//
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//
-//        if (requestCode == CAPTURE_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-//            val bitmap = BitmapFactory.decodeFile(photoFile!!.absolutePath)
-//            _PhotoView.setImageBitmap(bitmap)
-//            _PhotoView.isVisible = true
-//            uploadImage(bitmap)
-//        }
-//        else{
-//            displayMessage(baseContext, "Request cancelled, Va fa Napoli!")
-//        }
-//    }
-//
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    private fun convertImage(bitmap: Bitmap) : String {
-//        val stream = ByteArrayOutputStream()
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-//        val image = stream.toByteArray()
-////        return Base64.getEncoder().encodeToString(image)
-//        return Base64.encodeToString(image, Base64.DEFAULT)
-//    }
-//
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    private fun uploadImage(image: Bitmap){
-//        val service = ServiceGenerator.createService(ApiNetworkInterface::class.java)
-//        val imageString = convertImage(image)
-//        service.addImage(Image(imageString)).enqueue(object : Callback<Boolean>{
-//            override fun onFailure(call: Call<Boolean>, t: Throwable) {
-//                displayMessage(baseContext, t.message.toString())
-//                Log.d("error",t.message.toString())
+
+
+    private fun takePicture() {
+
+        val intent: Intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        val file: File = createFile()
+
+        val uri: Uri = FileProvider.getUriForFile(
+            this,
+            "irinabilc.bachelorthesis.fileprovider",
+            file
+        )
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
+
+    }
+
+//    private fun takePhoto() {
+//        val pictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//        if (pictureIntent.resolveActivity(packageManager) != null) {
+//            //Create a file to store the image
+//            var photoFile: File? = null
+//            try {
+//                photoFile = createImageFile()
+//            } catch (e: IOException) {
+//                Toast.makeText(this, "Cannot create file! Try again!", Toast.LENGTH_SHORT).show()
+//                takePhoto()
 //            }
-//
-//            override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
-//                displayMessage(baseContext, "Blana!")
+//            if (photoFile != null) {
+//                val photoURI = FileProvider.getUriForFile(this, "irinabilc.bachelorthesis.fileprovider", photoFile)
+//                pictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+//                startActivityForResult(pictureIntent, REQUEST_CODE_PERMISSIONS)
 //            }
-//        })
+//        }
 //    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
 //
+//            //To get the File for further usage
+//            val auxFile = File(currentPhotoPath)
+//
+//
+//            currentBitmap = BitmapFactory.decodeFile(currentPhotoPath)
+//            binding.imageView.setPic()
+
+            val intent = ProcessImageActivity.getStartIntent(this, currentPhotoPath)
+            startActivity(intent)
+
+        }
+    }
+
+
+    @SuppressLint("SimpleDateFormat")
+    @Throws(IOException::class)
+    private fun createFile(): File {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val storageDir: File = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        ).apply {
+            // Save a file: path for use with ACTION_VIEW intents
+            currentPhotoPath = absolutePath
+        }
+    }
+
+
+    private fun createImageFile(): File {
+        val timeStamp = SimpleDateFormat(
+            "yyyyMMdd_HHmmss",
+            Locale.getDefault()
+        ).format(Date())
+        val imageFileName = "IMG_" + timeStamp + "_"
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val image = File.createTempFile(
+            imageFileName,
+            ".jpg",
+            storageDir
+        )
+
+        currentPhotoPath = image.absolutePath
+        return image
+    }
+
 //    private fun createImageFile(): File? {
 //
 //        val mediaStorageDir = File(
 //            Environment
 //                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-//            DIRECTORY_NAME)
+//            DIRECTORY_NAME
+//        )
 //        // Create the storage directory if it does not exist
 //        if (!mediaStorageDir.exists()) {
 //            if (!mediaStorageDir.mkdirs()) {
@@ -223,36 +255,55 @@ class CameraActivity : AppCompatActivity() {
 //                return null
 //            }
 //        }
-//        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss",
-//            Locale.getDefault()).format(Date())
 //
-//        return File(mediaStorageDir.path + File.separator
-//                + "IMG_" + timeStamp + ".jpg")
+//        val timeStamp = SimpleDateFormat(
+//            "yyyyMMdd_HHmmss",
+//            Locale.getDefault()
+//        ).format(Date())
 //
-////        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-////        val imageFileName = "JPEG_$timeStamp" + "_"
-//////        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-////        val image = File.createTempFile(
-////            imageFileName, /* prefix */
-////            ".jpg", /* suffix */
-////            storageDir      /* directory */
-////        )
-////
-////        currentPhotoPath = image.absolutePath
-////        return image
+//        val image = File(
+//            mediaStorageDir.path + File.separator
+//                    + "IMG_" + timeStamp + ".jpg"
+//        )
+//        currentPhotoPath = image.absolutePath
+//        return image
 //    }
+
+
+//        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+//        val imageFileName = "JPEG_$timeStamp" + "_"
+////        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+//        val image = File.createTempFile(
+//            imageFileName, /* prefix */
+//            ".jpg", /* suffix */
+//            storageDir      /* directory */
+//        )
 //
-//
-//    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-//        if (requestCode == 0) {
-//            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-//                && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-//                captureImage()
-//            }
-//        }
-//
-//    }
-//
+//        currentPhotoPath = image.absolutePath
+//        return image
+
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            PERMISSION_REQUEST_CODE -> {
+
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                ) {
+
+                    takePicture()
+
+                } else {
+                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+
+            else -> {
+
+            }
+        }
+    }
 
     private fun displayMessage(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
