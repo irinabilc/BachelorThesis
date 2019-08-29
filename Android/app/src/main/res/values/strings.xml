@@ -12,4 +12,5 @@
     <string name="discard">Discarc</string>
     <string name="save">Save</string>
     <string name="speak">Speak</string>
+    <string name="waiting_for_text_to_be_processed">Waiting for text to be processed</string>
 </resources>

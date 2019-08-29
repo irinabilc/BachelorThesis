@@ -1,23 +1,45 @@
 package irinabilc.bachelorthesis.camera_feature
 
 import android.graphics.BitmapFactory
+import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage
+import com.google.firebase.ml.naturallanguage.languageid.FirebaseLanguageIdentificationOptions
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.document.FirebaseVisionDocumentText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 
-class ProcessImageViewModel() : ViewModel(){
+class ProcessImageViewModel : ViewModel() {
     private var filePath: String = ""
-    private var textToDisplay: StringBuilder? = null
+    val textToDisplay = MutableLiveData<java.lang.StringBuilder>()
+    val textLanguage = MutableLiveData<Locale>()
 
-    fun setFilePath(file: String){
+
+    fun setFilePath(file: String) {
         this.filePath = file
     }
 
-    fun getTextToBeDIsplayed(): StringBuilder?{
-        return this.textToDisplay
+    fun getTextLanguage(text: String?){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                detectLanguage(text)
+            }
+        }
     }
 
+    fun getTextToBeDIsplayed() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                analyzeImage()
+            }
+        }
+    }
 
     private fun analyzeImage() {
         val bitmap = BitmapFactory.decodeFile(filePath)
@@ -35,6 +57,7 @@ class ProcessImageViewModel() : ViewModel(){
             }
     }
 
+
     private fun processTextRecognitionResult(texts: FirebaseVisionDocumentText?) {
         val blocks = texts!!.blocks
         val stringBuilder = StringBuilder()
@@ -47,6 +70,26 @@ class ProcessImageViewModel() : ViewModel(){
 
             }
         }
-        this.textToDisplay = stringBuilder
+        textToDisplay.value = stringBuilder
+    }
+
+    private fun detectLanguage(textInput: String?) {
+
+        val text = textInput.toString().toLowerCase()
+        val options = FirebaseLanguageIdentificationOptions.Builder()
+            .setConfidenceThreshold(0.4F)
+            .build()
+        val languageIdentifier = FirebaseNaturalLanguage.getInstance().languageIdentification
+        languageIdentifier.identifyLanguage(text)
+            .addOnSuccessListener { language ->
+                if (language != "und") {
+                    textLanguage.value = Locale.forLanguageTag(language)
+                } else {
+                    Log.e("processImgViewModel", "LanguageDetection: Cannot identify language")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("processImgViewModel", "LanguageDetection:Failure$e")
+            }
     }
 }

@@ -12,6 +12,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -26,6 +30,7 @@ import kotlin.text.Typography.paragraph
 class ProcessImageActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private lateinit var binding: ProcessImageActivityBinding
+    private lateinit var processImgViewModel: ProcessImageViewModel
     private var tts: TextToSpeech? = null
     private lateinit var currentLanguage: String
     private val TAG = "ProcessImageActivity"
@@ -33,14 +38,33 @@ class ProcessImageActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_process_image)
+        processImgViewModel = ViewModelProviders.of(this).get(ProcessImageViewModel::class.java)
 
-        val path = intent.getStringExtra("file_path")
+        processImgViewModel.setFilePath(intent.getStringExtra("file_path"))
 
-        binding.textView.text = ""
+//        val path = intent.getStringExtra("file_path")
+//
+//        binding.textView.text = ""
+//
+//        if (path != null) {
+//            analyzeImage(path)
+//        }
+        processImgViewModel.getTextToBeDIsplayed()
 
-        if (path != null) {
-            analyzeImage(path)
-        }
+        processImgViewModel.textToDisplay.observe(this, androidx.lifecycle.Observer {
+            if (it != null) {
+                binding.textView.text = it
+                processImgViewModel.getTextLanguage(it.toString())
+            }
+        })
+
+
+
+        processImgViewModel.textLanguage.observe(this, androidx.lifecycle.Observer {
+            if (it != null) {
+                setSpeakerLanguage(it)
+            }
+        })
 
         tts = TextToSpeech(this, this)
 
@@ -56,24 +80,6 @@ class ProcessImageActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         } else {
             Log.e(TAG, "TTS:Initialization Failed!")
         }
-    }
-
-
-    private fun analyzeImage(path: String?) {
-        val bitmap = BitmapFactory.decodeFile(path)
-
-        val image = FirebaseVisionImage.fromBitmap(bitmap)
-
-        val detector = FirebaseVision.getInstance()
-            .cloudDocumentTextRecognizer
-
-        detector.processImage(image).addOnSuccessListener { texts ->
-            processTextRecognitionResult(texts)
-        }
-            .addOnFailureListener { e ->
-                e.printStackTrace()
-                Toast.makeText(this, "Error, please retry!", Toast.LENGTH_SHORT).show()
-            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -107,41 +113,28 @@ class ProcessImageActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    private fun processTextRecognitionResult(texts: FirebaseVisionDocumentText?) {
-        val blocks = texts!!.blocks
-        var textBuilder = ""
-        if (blocks.size == 0) {
-            Toast.makeText(this, "No content detected", Toast.LENGTH_SHORT).show()
-            return
+
+//    private fun detectLanguage(text: String) {
+//        val languageIdentifier = FirebaseNaturalLanguage.getInstance().getLanguageIdentification()
+//        languageIdentifier.identifyLanguage(text)
+//            .addOnSuccessListener { language ->
+//                if (!language.equals("und")) {
+//                    currentLanguage = language
+//                    setSpeakerLanguage()
+//                } else {
+//                    Log.e(TAG, "LanguageDetection: Cannot identify language")
+//                }
+//            }
+//            .addOnFailureListener { e ->
+//                Log.e(TAG, "LanguageDetection:Failure$e")
+//            }
+//    }
+
+    private fun setSpeakerLanguage(language: Locale) {
+        val result = tts!!.setLanguage(language)
+        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+            Log.e(TAG, "TTS:The Language specified is not supported!")
         }
-        blocks.forEach { block ->
-            block.paragraphs.forEach { paragraph ->
-                binding.textView.append(paragraph.text.toString())
-            }
-        }
-
-        //binding.textView.setText(textBuilder)
-        //detectLanguage(textBuilder)
-    }
-
-    private fun detectLanguage(text: String) {
-        val languageIdentifier = FirebaseNaturalLanguage.getInstance().getLanguageIdentification()
-        languageIdentifier.identifyLanguage(text)
-            .addOnSuccessListener { language ->
-                if (!language.equals("und")) {
-                    currentLanguage = language
-                    setSpeakerLanguage()
-                } else {
-                    Log.e(TAG, "LanguageDetection: Cannot identify language")
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "LanguageDetection:Failure$e")
-            }
-    }
-
-    private fun setSpeakerLanguage() {
-        tts?.setLanguage(Locale.forLanguageTag(currentLanguage))
     }
 
     override fun onDestroy() {

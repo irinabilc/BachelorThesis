@@ -12,21 +12,10 @@
             android:orientation="vertical"
     >
 
-
-        <!--<Toolbar-->
-                <!--android:id="@+id/my_toolbar"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="?attr/actionBarSize"-->
-                <!--android:background="?attr/colorPrimary"-->
-                <!--android:elevation="4dp"-->
-                <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->
-                <!--app:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
-        <!--/>-->
-
         <TextView android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                android:id="@+id/text_view"
-                  android:hint="Waiting for text to be processed"
+                  android:id="@+id/text_view"
+                  android:hint="@string/waiting_for_text_to_be_processed"
 
         />
 
