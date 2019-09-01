@@ -13,16 +13,9 @@ import androidx.databinding.DataBindingUtil
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import irinabilc.bachelorthesis.camera_feature.CameraActivity
-import irinabilc.bachelorthesis.domain.User
-import irinabilc.bachelorthesis.networking.ApiNetworkInterface
-import irinabilc.bachelorthesis.networking.ServiceGenerator
+import irinabilc.bachelorthesis.image.CameraActivity
 import irinabilc.bachelorthesis.utils.isValid
 import irinabilc.bachelorthesis.utils.validate
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-
 
 class RegisterAccountActivity : AppCompatActivity() {
     // UI elements
@@ -98,7 +91,7 @@ class RegisterAccountActivity : AppCompatActivity() {
                     val currentUserDB = mDatabaseReference!!.child(userid)
                     currentUserDB.child("firstName").setValue(_firstNameText!!.text.toString())
                     currentUserDB.child("lastName").setValue(_lastNameText!!.text.toString())
-
+                    Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
                     updateUserandUI()
 
 
@@ -131,37 +124,6 @@ class RegisterAccountActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun register() {
-        if (!validateFields()) {
-            Toast.makeText(this@RegisterAccountActivity, "Invalid data!", Toast.LENGTH_SHORT).show()
-            _registerButton!!.isEnabled = true
-            return
-        }
-
-        _registerButton!!.isEnabled = false
-
-        val service = ServiceGenerator.createService(ApiNetworkInterface::class.java)
-
-        service.addUser(User(_emailText?.text.toString(), _passwordText?.text.toString()))
-            .enqueue(object : Callback<User> {
-                override fun onFailure(call: Call<User>, t: Throwable) {
-                    Toast.makeText(this@RegisterAccountActivity, "Register error!", Toast.LENGTH_SHORT).show()
-                    _registerButton!!.isEnabled = true
-
-                }
-
-                override fun onResponse(call: Call<User>, response: Response<User>) {
-                    Toast.makeText(this@RegisterAccountActivity, "Register successful!", Toast.LENGTH_SHORT).show()
-                    _registerButton!!.isEnabled = true
-                    startActivity(Intent(this@RegisterAccountActivity, LoginActivity::class.java))
-                    finish()
-                }
-
-            }
-            )
-    }
-
 
     private fun validateFields(): Boolean {
         _emailText?.validate({ s -> s.isValid() }, "Invalid username!")

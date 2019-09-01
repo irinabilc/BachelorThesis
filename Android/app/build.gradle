@@ -33,9 +33,7 @@ androidExtensions {
     experimental = true
 }
 
-
-def retrofit_version = "2.4.0"
-def moshi_version = "1.8.0"
+def room_version = "2.1.0-alpha02"
 def lifecycle_version = "2.0.0"
 
 
@@ -58,19 +56,19 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0-alpha03"
 
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.1'
-    implementation("com.squareup.moshi:moshi:$moshi_version")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshi_version")
+
+    implementation 'com.google.firebase:firebase-ml-natural-language:21.0.0'
+    implementation 'com.google.firebase:firebase-ml-natural-language-translate-model:20.0.3'
+
+
     implementation "com.android.support:support-core-utils:28.0.0"
 
-//
-//    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1"
-//    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"
-//
-//    implementation "androidx.room:room-runtime:$room_version"
-//    kapt "androidx.room:room-compiler:$room_version"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 
     implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support:design:28.0.0'

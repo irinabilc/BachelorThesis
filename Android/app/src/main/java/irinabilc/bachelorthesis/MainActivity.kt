@@ -4,7 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.google.firebase.auth.FirebaseAuth
-import irinabilc.bachelorthesis.camera_feature.CameraActivity
+import irinabilc.bachelorthesis.image.CameraActivity
 
 
 class MainActivity : AppCompatActivity() {
