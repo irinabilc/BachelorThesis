@@ -9,7 +9,7 @@ import irinabilc.bachelorthesis.ItemTextEntryBinding
 import irinabilc.bachelorthesis.R
 import irinabilc.bachelorthesis.model.TextEntry
 
-class TextEntryListAdapter :
+class TextEntryListAdapter(private val clickListener: (TextEntry) -> Unit) :
     androidx.recyclerview.widget.ListAdapter<TextEntry, TextEntryListAdapter.TextEntryViewHolder>(
         TextEntryDIffCallback()
     ) {
@@ -24,12 +24,16 @@ class TextEntryListAdapter :
         )
 
     override fun onBindViewHolder(holder: TextEntryViewHolder, position: Int) =
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), clickListener)
 
     class TextEntryViewHolder(private val binding: ItemTextEntryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(entry: TextEntry) {
+        fun bind(entry: TextEntry, clickListener: (TextEntry) -> Unit) {
             binding.textEntry = entry
+            binding.root.setOnClickListener {
+                clickListener(entry)
+                true
+            }
         }
     }
 

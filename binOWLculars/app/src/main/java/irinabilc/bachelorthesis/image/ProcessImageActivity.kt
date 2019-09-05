@@ -1,6 +1,7 @@
 package irinabilc.bachelorthesis.image
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
@@ -8,6 +9,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import android.text.InputType
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -19,6 +21,8 @@ import irinabilc.bachelorthesis.language.TTSListener
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 import android.text.method.ScrollingMovementMethod
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import irinabilc.bachelorthesis.R
 
 
@@ -28,22 +32,21 @@ class ProcessImageActivity : AppCompatActivity() {
     private val processImgViewModel: ProcessImageViewModel  by viewModel()
     private var tts: TextToSpeech? = null
     private lateinit var currentLanguage: String
+    private lateinit var alertEditText: EditText
     private val TAG = "ProcessImageActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_process_image)
-        binding.lifecycleOwner=this
+        binding.lifecycleOwner = this
 
         binding.textView.movementMethod = ScrollingMovementMethod()
 
-        val cm = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
-        val isConnected: Boolean = activeNetwork?.isConnectedOrConnecting ?: false
+
 
         processImgViewModel.setFilePath(intent.getStringExtra("file_path"))
 
-        processImgViewModel.getTextToBeDisplayed(isConnected)
+        processImgViewModel.getTextToBeDisplayed(checkConnection())
 
         processImgViewModel.textToDisplay.observe(this, androidx.lifecycle.Observer {
             if (it != null) {
@@ -55,14 +58,50 @@ class ProcessImageActivity : AppCompatActivity() {
         processImgViewModel.textLanguage.observe(this, androidx.lifecycle.Observer {
             if (it != null) {
                 setSpeakerLanguage(it)
+                currentLanguage = it.toLanguageTag()
             }
         })
 
         tts = TextToSpeech(this, TTSListener())
 
         binding.saveButton.setOnClickListener {
-            processImgViewModel.save()
+            getTextEntryName()
         }
+    }
+
+    private fun checkConnection(): Boolean {
+        val cm = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        return activeNetwork?.isConnected ?: false
+    }
+
+    private fun getTextEntryName() {
+        val alertDialog = AlertDialog.Builder(this)
+        alertDialog.setTitle("Save Text entry?")
+
+        alertEditText = EditText(this)
+        alertEditText.inputType = InputType.TYPE_CLASS_TEXT
+        alertDialog.setView(alertEditText)
+
+        alertDialog.setPositiveButton("Save") { _, _ ->
+            Toast.makeText(this, "Text Entry Saved", Toast.LENGTH_SHORT).show()
+
+            saveEntry()
+        }
+
+        alertDialog.setNegativeButton("Cancel") { _, _ ->
+            Toast.makeText(this, "Cancelled!", Toast.LENGTH_SHORT).show()
+        }
+
+        alertDialog.create()
+
+        alertDialog.show()
+    }
+
+    private fun saveEntry() {
+        processImgViewModel.save(
+            alertEditText.text.toString()
+        )
     }
 
     override fun onBackPressed() {

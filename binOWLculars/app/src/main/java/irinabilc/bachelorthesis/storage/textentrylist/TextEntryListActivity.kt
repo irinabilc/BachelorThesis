@@ -12,15 +12,26 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class TextEntryListActivity : AppCompatActivity() {
 
     private lateinit var binding: TextEntryListActivityBinding
-    private val viewModel:TextEntryListViewModel by viewModel()
+    private val viewModel: TextEntryListViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_text_entry_list)
-        binding.lifecycleOwner=this
-        binding.recyclerView.layoutManager=LinearLayoutManager(this)
-        val adapter=TextEntryListAdapter()
-        binding.recyclerView.adapter=adapter
+
+        binding.lifecycleOwner = this
+
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+
+        var adapter = TextEntryListAdapter() {}
+
+        adapter = TextEntryListAdapter {
+            startActivity(TextEntryDetailsActivity.getSTartIntent(this, it))
+        }
+
+
+        binding.recyclerView.adapter = adapter
+
         viewModel.entries.observe(this, Observer {
             it ?: return@Observer
             adapter.submitList(it)

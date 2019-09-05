@@ -30,9 +30,9 @@ class ProcessImageViewModel(private val controller: TextEntryController) : ViewM
         this.filePath = file
     }
 
-    fun getTextLanguage(text: String?){
+    fun getTextLanguage(text: String?) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 detectLanguage(text)
             }
         }
@@ -46,26 +46,18 @@ class ProcessImageViewModel(private val controller: TextEntryController) : ViewM
         }
     }
 
-    fun save(){
-        val name1="McDonald's"
-        val language1="en"
-        val text1="A type of food you should not be eating"
-        val file1 = "pathhhhh"
-        val name2="Fundamentele programarii"
-        val language2="ro"
-        val text2="Informatii legate de clase si obiecte"
-        val file2 = "pathhhhh"
+    fun save(name: String) {
 
         viewModelScope.launch {
-            controller.addEntry(name1,language1,text1, file1)
-            controller.addEntry(name2, language2, text2, file2)
+            controller.addEntry(
+                name,
+                textLanguage.value!!.toLanguageTag(),
+                textToDisplay.value.toString(),
+                filePath
+            )
         }
     }
 
-//    private fun processImage() {
-//        val imageProcessor = ImageProcessor()
-//        textToDisplay.postValue(imageProcessor.getText(filePath))
-//    }
 
     private fun analyzeImage(isConnected: Boolean) {
         val bitmap = BitmapFactory.decodeFile(filePath)
@@ -76,8 +68,7 @@ class ProcessImageViewModel(private val controller: TextEntryController) : ViewM
         if (isConnected) {
             detector = FirebaseVision.getInstance()
                 .cloudTextRecognizer
-        }
-        else{
+        } else {
             detector = FirebaseVision.getInstance().onDeviceTextRecognizer
         }
 

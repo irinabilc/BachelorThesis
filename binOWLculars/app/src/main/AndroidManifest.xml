@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="irinabilc.bachelorthesis">
+        xmlns:tools="http://schemas.android.com/tools"
+        package="irinabilc.bachelorthesis">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <uses-feature
             android:name="android.hardware.camera"
-            android:required="true"/>
+            android:required="true" />
 
     <application
             android:name=".MainApplication"
@@ -21,12 +21,10 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".image.TextEntryDetailsActivity">
-        </activity>
-        <activity android:name=".storage.textentrylist.TextEntryListActivity">
-        </activity>
-        <activity android:name=".image.ProcessImageActivity">
-        </activity>
+        <activity android:name=".storage.textentrylist.TextEntryDetailsActivity"></activity>
+        <activity android:name=".image.TextEntryDetailsActivity"></activity>
+        <activity android:name=".storage.textentrylist.TextEntryListActivity"></activity>
+        <activity android:name=".image.ProcessImageActivity"></activity>
 
         <provider
                 android:name="androidx.core.content.FileProvider"
@@ -35,36 +33,32 @@
                 android:grantUriPermissions="true">
             <meta-data
                     android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/file_paths"/>
+                    android:resource="@xml/file_paths" />
         </provider>
 
         <meta-data
                 android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-                android:value="ocr"/>
+                android:value="ocr" />
 
         <activity
                 android:name=".SplashScreenActivity"
                 android:theme="@style/SplashScreen">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".image.CameraActivity">
-        </activity>
+        <activity android:name=".image.CameraActivity"></activity>
         <activity
                 android:name=".LoginActivity"
-                android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+                android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
                 android:name=".RegisterAccountActivity"
-                android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+                android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
                 android:name=".MainActivity"
-                android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+                android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

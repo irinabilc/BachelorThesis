@@ -114,7 +114,7 @@ class RegisterAccountActivity : AppCompatActivity() {
             "Passwords don't coincide!"
         )
 
-        if (binding.emailEditText.error != null || binding.passwordEditText?.error != null ||
+        if (binding.emailEditText.error != null || binding.passwordEditText.error != null ||
             binding.confirmPasswordEditText.error != null
         )
             return false
